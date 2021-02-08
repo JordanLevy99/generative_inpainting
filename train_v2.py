@@ -4,6 +4,8 @@ import glob
 import tensorflow as tf
 import neuralgym as ng
 
+tf.compat.v1.disable_resource_variables()
+
 from inpaint_model import InpaintCAModel
 
 
@@ -33,15 +35,12 @@ if __name__ == "__main__":
     if FLAGS.guided:
         fnames = [(fname, fname[:-4] + '_edge.jpg') for fname in fnames]
         img_shapes = [img_shapes, img_shapes]
-    print('Getting Data...')
     data = ng.data.DataFromFNames(
         fnames, img_shapes, random_crop=FLAGS.random_crop,
         nthreads=FLAGS.num_cpus_per_job)
     images = data.data_pipeline(FLAGS.batch_size)
-    print('Data Loaded...')
     # main model
     model = InpaintCAModel()
-    print('Main Model initialized')
     g_vars, d_vars, losses = model.build_graph_with_losses(FLAGS, images)
     # validation images
     if FLAGS.val:
@@ -59,10 +58,10 @@ if __name__ == "__main__":
             static_inpainted_images = model.build_static_infer_graph(
                 FLAGS, static_images, name='static_view/%d' % i)
     # training settings
-    lr = tf.get_variable(
+    lr = tf.compat.v1.get_variable(
         'lr', shape=[], trainable=False,
-        initializer=tf.constant_initializer(1e-4))
-    d_optimizer = tf.train.AdamOptimizer(lr, beta1=0.5, beta2=0.999)
+        initializer=tf.compat.v1.constant_initializer(1e-4))
+    d_optimizer = tf.compat.v1.train.AdamOptimizer(lr, beta1=0.5, beta2=0.999)
     g_optimizer = d_optimizer
     # train discriminator with secondary trainer, should initialize before
     # primary trainer.
@@ -99,8 +98,7 @@ if __name__ == "__main__":
         ng.callbacks.WeightsViewer(),
         ng.callbacks.ModelRestorer(trainer.context['saver'], dump_prefix=FLAGS.model_restore+'/snap', optimistic=True),
         ng.callbacks.ModelSaver(FLAGS.train_spe, trainer.context['saver'], FLAGS.log_dir+'/snap'),
-        ng.callbacks.SummaryWriter((FLAGS.val_psteps//1), trainer.context['summary_writer'], tf.summary.merge_all()),
+        ng.callbacks.SummaryWriter((FLAGS.val_psteps//1), trainer.context['summary_writer'], tf.compat.v1.summary.merge_all()),
     ])
-    print('Training starting...')
     # launch training
     trainer.train()

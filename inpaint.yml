@@ -4,15 +4,16 @@ num_gpus_per_job: 1  # number of gpus each job need
 num_cpus_per_job: 4  # number of gpus each job need
 num_hosts_per_job: 1
 memory_per_job: 32  # number of gpus each job need
-gpu_type: 'nvidia-tesla-p100'
+# gpu_type: 'nvidia-tesla-p100'
+gpu_type: 'geforce-rtx-2070super'
 
 # parameters
-name: places2_gated_conv_v100  # any name
+name: coco2017_gated_conv_v100  # any name
 model_restore: ''  # logs/places2_gated_conv
-dataset: 'celebahq'  # 'tmnist', 'dtd', 'places2', 'celeba', 'imagenet', 'cityscapes'
-random_crop: False  # Set to false when dataset is 'celebahq', meaning only resize the images to img_shapes, instead of crop img_shapes from a larger raw image. This is useful when you train on images with different resolutions like places2. In these cases, please set random_crop to true.
-val: False  # true if you want to view validation results in tensorboard
-log_dir: logs/full_model_celeba_hq_256
+dataset: 'coco2017'  # 'tmnist', 'dtd', 'places2', 'celeba', 'imagenet', 'cityscapes'
+random_crop: True  # Set to false when dataset is 'celebahq', meaning only resize the images to img_shapes, instead of crop img_shapes from a larger raw image. This is useful when you train on images with different resolutions like places2. In these cases, please set random_crop to true.
+val: True  # true if you want to view validation results in tensorboard
+log_dir: logs/full_model_coco2017
 
 gan: 'sngan'
 gan_loss_alpha: 1
@@ -29,6 +30,12 @@ val_psteps: 2000
 
 # data
 data_flist:
+  # https://github.com/cocodataset/cocoapi
+  coco2017: [
+    'data_flist/coco2017_train_shuffled.flist',
+    'data_flist/coco2017_validation_shuffled.flist'
+  ]
+
   # https://github.com/jiahuiyu/progressive_growing_of_gans_tf
   celebahq: [
     'data/celeba_hq/train_shuffled.flist',
